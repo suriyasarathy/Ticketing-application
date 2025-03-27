@@ -11,7 +11,7 @@ function User() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/userProfile?id=${23}`);
+        const response = await fetch(`http://localhost:3000/userProfile?id=${id}`);
         if (!response.ok) throw new Error("Failed to fetch user data");
 
         const data = await response.json();
@@ -162,40 +162,53 @@ function User() {
         </Col>
 
         <Col md="4">
-          <Card className="card-user">
-            <Card.Body>
-              <div className="author" style={{ textAlign: "center" }}>
-                <img
-                  alt="User"
-                  className="avatar border-gray"
-                  src={userData.profile_image || "https://www.w3schools.com/w3images/avatar2.png"}
-                  style={{ width: "150px", height: "150px", borderRadius: "50%" }}
-                />
-                <h5 className="title">{userData.name}</h5>
-                <p className="description">Role: {userData.role || "Not Assigned"}</p>
-                <p className="description">Teams:</p>
-                <ul>
-                  {userData.teams && userData.teams.length > 0 ? (
-                    userData.teams.map((team, index) => <li key={index}>{team}</li>)
-                  ) : (
-                    <li>No team assigned</li>
-                  )}
-                </ul>
-                <p className="description">Projects:</p>
-                <ul>
-                  {userData.projects && userData.projects.length > 0 ? (
-                    userData.projects.map((project, index) => <li key={index}>{project}</li>)
-                  ) : (
-                    <li>No project assigned</li>
-                  )}
-                </ul>
-              </div>
-              <p className="description text-center">
-                "{userData.about_me || "No bio available"}"
-              </p>
-            </Card.Body>
-          </Card>
-        </Col>
+  <Card className="card-user text-center p-3 shadow">
+    <Card.Body>
+      <div className="author">
+        <img
+          alt="User"
+          className="avatar border-gray"
+          src={userData.profile_image || "https://www.w3schools.com/w3images/avatar2.png"}
+          style={{
+            width: "120px",
+            height: "120px",
+            borderRadius: "50%",
+            margin: "10px auto",
+            display: "block",
+          }}
+        />
+        <h5 className="title mt-2">{userData.name}</h5>
+        <p className="description font-weight-bold">Role: {userData.role_name || "Not Assigned"}</p>
+
+        <hr />
+
+        <p className="description font-weight-bold">Teams:</p>
+        <ul className="list-unstyled">
+          {userData.teams?.length > 0 ? (
+            userData.teams.map((team, index) => <li key={index}>{team}</li>)
+          ) : (
+            <li className="text-muted">No team assigned</li>
+          )}
+        </ul>
+
+        <p className="description font-weight-bold">Projects:</p>
+        <ul className="list-unstyled">
+          {userData.projects?.length > 0 ? (
+            userData.projects.map((project, index) => <li key={index}>{project}</li>)
+          ) : (
+            <li className="text-muted">No project assigned</li>
+          )}
+        </ul>
+      </div>
+
+      <hr />
+      <p className="description text-center font-italic">
+        "{userData.about_me || "No bio available"}"
+      </p>
+    </Card.Body>
+  </Card>
+</Col>
+
       </Row>
     </Container>
   );

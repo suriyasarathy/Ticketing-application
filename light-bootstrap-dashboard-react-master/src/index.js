@@ -37,7 +37,7 @@ root.render(
         {/* <Route path='/admin/Team' element={<CreateTeam/>}/> */}
         <Route path="/Create-ticket" element={<CreateTicket />} />
         <Route path="/reset-Password/:token" element={<ResetPassword />} />
-        <Route path="/User-Profile" element={<UserProfile />} />
+        <Route path="/User-Profile/:id" element={<UserProfile />} />
         <Route path="/UserCreateTicket" element={<UserCreateTicket />} />
         <Route path="/ProjectList" element={<ProjectList />} />
         <Route path="/ProjectOfTicket/:projectID" element={<ProjetofTicket />} />

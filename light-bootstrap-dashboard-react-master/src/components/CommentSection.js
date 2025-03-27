@@ -424,180 +424,22 @@
 
 
 
-// import React, { useState, useEffect } from "react";
-// import axios from "axios";
-// import { FaFilePdf, FaFileWord, FaFileArchive, FaFile } from "react-icons/fa";
-
-// const CommentSection = ({ ticketId }) => {
-//   const [comments, setComments] = useState([]);
-//   const [comment, setComment] = useState("");
-//   const [file, setFile] = useState(null);
-//   const [darkMode, setDarkMode] = useState(false);
-//   const MAX_COMMENT_LENGTH = 500;
-//   const MAX_FILE_SIZE = 10 * 1024 * 1024;
-//   const userId = 23;
-
-//   useEffect(() => {
-//     fetchComments();
-//   }, []);
-
-//   const fetchComments = async () => {
-//     try {
-//       const response = await axios.get(`http://localhost:3000/commentdisplay?ticket_id=${2272000006}`);
-//       setComments(response.data);
-//     } catch (error) {
-//       console.error("Error fetching comments:", error);
-//     }
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     if (!comment) {
-//       alert("Please enter a comment");
-//       return;
-//     }
-//     if (comment.length > MAX_COMMENT_LENGTH) {
-//       alert("Comment exceeds the 500-character limit");
-//       return;
-//     }
-//     if (file && file.size > MAX_FILE_SIZE) {
-//       alert("File size exceeds the 10MB limit");
-//       return;
-//     }
-//     const formData = new FormData();
-//     formData.append("comment", comment);
-//     formData.append("Ticket_id", 2272000006);
-//     formData.append("user_id", userId);
-//     if (file) formData.append("file", file);
-
-//     try {
-//       await axios.post("http://localhost:3000/Comment", formData, {
-//         headers: { "Content-Type": "multipart/form-data" },
-//       });
-//       setComment("");
-//       setFile(null);
-//       fetchComments();
-//     } catch (error) {
-//       console.error("Error adding comment:", error);
-//     }
-//   };
-
-//   return (
-//     <div className={`p-3 border rounded ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}>
-//       <div className="d-flex justify-content-between align-items-center mb-2">
-//         <label className="fw-bold">Comments:</label>
-//         <button className="btn btn-sm btn-outline-secondary" onClick={() => setDarkMode(!darkMode)}>
-//           {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-//         </button>
-//       </div>
-
-//       <div className="p-2 border rounded" style={{ maxHeight: "300px", overflowY: "auto" }}>
-//         {comments.length > 0 ? comments.map((c, index) => {
-//           const isMyComment = c.user_id === userId;
-//           return (
-//             <div key={index} className={`d-flex ${isMyComment ? 'justify-content-end' : 'justify-content-start'} mb-3`}>
-              
-//               {/* Profile Icon */}
-//               {!isMyComment && (
-//                 c.profile_image ? (
-//                   <img src={c.profile_image} alt="Profile" className="rounded-circle me-2" style={{ width: "40px", height: "40px" }} />
-//                 ) : (
-//                   <div className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style={{ width: "40px", height: "40px", fontSize: "18px", fontWeight: "bold" }}>
-//                     {c.name.charAt(0).toUpperCase()}
-//                   </div>
-//                 )
-//               )}
-
-//               <div style={{ maxWidth: "75%" }}>
-//                 {/* Name and Date in the Same Row */}
-// <div className="d-flex  align-items-end flex-column">
-//   <strong className="me-2">{c.name}</strong>
-//   <small className="text-muted">{new Date(c.created_at).toLocaleString()}</small>
-// </div>
-
-
-//                 {/* Comment Box */}
-//                 <div className="p-2 border rounded bg-white mt-1">
-//                   <p className="mb-1">{c.comment}</p>
-                  
-//                   {/* Image Preview (without extra icon) */}
-//                   {c.file_url && c.File_type?.startsWith("image/") && (
-//                     <div className="mt-2">
-//                       <img src={c.file_url} alt="Attachment" className="rounded w-100" style={{ maxWidth: "200px" }} />
-//                     </div>
-//                   )}
-
-//                   {/* Other File Attachments */}
-//                   {c.file_url && !c.File_type?.startsWith("image/") && (
-//                     <div className="p-2 mt-2 border rounded bg-white d-flex align-items-center">
-//                       {c.File_type === "application/pdf" && <FaFilePdf color="#dc3545" size={18} />}
-//                       {c.File_type.includes("word") && <FaFileWord color="#007bff" size={18} />}
-//                       {c.File_type.includes("zip") && <FaFileArchive color="#ffc107" size={18} />}
-//                       {!["application/pdf", "application/zip"].includes(c.File_type) && <FaFile color="#6c757d" size={18} />}
-//                       <a href={c.file_url} target="_blank" rel="noopener noreferrer" className="ms-2">
-//                         Open file
-//                       </a>
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-
-//               {/* Profile Icon for My Comments */}
-//               {isMyComment && (
-//                 c.profile_image ? (
-//                   <img src={c.profile_image} alt="Profile" className="rounded-circle ms-2" style={{ width: "40px", height: "40px" }} />
-//                 ) : (
-//                   <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center ms-2" style={{ width: "40px", height: "40px", fontSize: "18px", fontWeight: "bold" }}>
-//                     {c.name.charAt(0).toUpperCase()}
-//                   </div>
-//                 )
-//               )}
-//             </div>
-//           );
-//         }) : <p>No comments yet.</p>}
-//       </div>
-
-//       {/* Comment Input */}
-//       <div className="mt-3">
-//         <textarea className="form-control" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={MAX_COMMENT_LENGTH} placeholder="Add a comment (optional)"></textarea>
-//         <input type="file" className="form-control mt-2" onChange={(e) => setFile(e.target.files[0])} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
-//         <button className="btn btn-primary w-100 mt-2" onClick={handleSubmit}>Submit Comment</button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default CommentSection;
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { io } from "socket.io-client";  // Import Socket.IO client
 import { FaFilePdf, FaFileWord, FaFileArchive, FaFile } from "react-icons/fa";
 
-const socket = io("http://localhost:3000"); // Connect to the backend WebSocket server
-
-const CommentSection = ({ ticketId,userId}) => {
-  console.log(userId);
-  
+const CommentSection = ({ ticketId }) => {
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState("");
   const [file, setFile] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const MAX_COMMENT_LENGTH = 500;
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
-  // const userId = localStorage.getItem("userId");
+  const userId = 23;
+  
 
   useEffect(() => {
     fetchComments();
-
-    // Listen for new comments from WebSocket
-    socket.on("new_comment", (newComment) => {
-      setComments((prevComments) => [...prevComments, newComment]);
-    });
-
-    return () => {
-      socket.off("new_comment");
-    };
   }, []);
 
   const fetchComments = async () => {
@@ -630,18 +472,12 @@ const CommentSection = ({ ticketId,userId}) => {
     if (file) formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:3000/Comment", formData, {
+      await axios.post("http://localhost:3000/Comment", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      const newComment = response.data; // Get the newly created comment
-
-      // Emit the new comment to the WebSocket server
-      socket.emit("comment_added", newComment);
-
       setComment("");
       setFile(null);
-      // No need to fetch again, since we push the new comment via WebSocket
+      fetchComments();
     } catch (error) {
       console.error("Error adding comment:", error);
     }
@@ -649,6 +485,12 @@ const CommentSection = ({ ticketId,userId}) => {
 
   return (
     <div className={`p-3 border rounded ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}>
+       {/* Comment Input */}
+       <div className="mt-3">
+        <textarea className="form-control" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={MAX_COMMENT_LENGTH} placeholder="Add a comment (optional)"></textarea>
+        <input type="file" className="form-control mt-2" onChange={(e) => setFile(e.target.files[0])} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
+        <button className="btn btn-primary w-100 mt-2" onClick={handleSubmit}>Submit Comment</button>
+      </div>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <label className="fw-bold">Comments:</label>
         <button className="btn btn-sm btn-outline-secondary" onClick={() => setDarkMode(!darkMode)}>
@@ -656,12 +498,13 @@ const CommentSection = ({ ticketId,userId}) => {
         </button>
       </div>
 
-      <div className="p-2 border rounded" style={{ maxHeight: "300px", overflowY: "auto" }}>
+      <div className="p-2 border rounded">
         {comments.length > 0 ? comments.map((c, index) => {
           const isMyComment = c.user_id === userId;
           return (
             <div key={index} className={`d-flex ${isMyComment ? 'justify-content-end' : 'justify-content-start'} mb-3`}>
               
+              {/* Profile Icon */}
               {!isMyComment && (
                 c.profile_image ? (
                   <img src={c.profile_image} alt="Profile" className="rounded-circle me-2" style={{ width: "40px", height: "40px" }} />
@@ -673,20 +516,27 @@ const CommentSection = ({ ticketId,userId}) => {
               )}
 
               <div style={{ maxWidth: "75%" }}>
-                <div className="d-flex align-items-end flex-column">
-                  <strong className="me-2">{c.name}</strong>
-                  <small className="text-muted">{new Date(c.created_at).toLocaleString()}</small>
-                </div>
+                {/* Name and Date in the Same Row */}
+<div className="d-flex  align-items-center flex-column">
+  <strong className="me-2">{c.name}</strong>
+  <small className="text-muted">{new Date(c.created_at).toLocaleString()}</small>
+</div>
 
+
+                {/* Comment Box */}
                 <div className="p-2 border rounded bg-white mt-1">
                   <p className="mb-1">{c.comment}</p>
                   
+                  {/* Image Preview (without extra icon) */}
                   {c.file_url && c.File_type?.startsWith("image/") && (
                     <div className="mt-2">
-                      <img src={c.file_url} alt="Attachment" className="rounded w-100" style={{ maxWidth: "200px" }} />
+<a href={c.file_url} target="_blank" rel="noopener noreferrer">
+  <img src={c.file_url} alt="Attachment" className="rounded w-100" style={{ maxWidth: "200px", cursor: "pointer" }} />
+</a>
                     </div>
                   )}
 
+                  {/* Other File Attachments */}
                   {c.file_url && !c.File_type?.startsWith("image/") && (
                     <div className="p-2 mt-2 border rounded bg-white d-flex align-items-center">
                       {c.File_type === "application/pdf" && <FaFilePdf color="#dc3545" size={18} />}
@@ -701,6 +551,7 @@ const CommentSection = ({ ticketId,userId}) => {
                 </div>
               </div>
 
+              {/* Profile Icon for My Comments */}
               {isMyComment && (
                 c.profile_image ? (
                   <img src={c.profile_image} alt="Profile" className="rounded-circle ms-2" style={{ width: "40px", height: "40px" }} />
@@ -715,16 +566,169 @@ const CommentSection = ({ ticketId,userId}) => {
         }) : <p>No comments yet.</p>}
       </div>
 
-      <div className="mt-3">
-        <textarea className="form-control" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={MAX_COMMENT_LENGTH} placeholder="Add a comment (optional)"></textarea>
-        <input type="file" className="form-control mt-2" onChange={(e) => setFile(e.target.files[0])} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
-        <button className="btn btn-primary w-100 mt-2" onClick={handleSubmit}>Submit Comment</button>
-      </div>
+     
     </div>
   );
 };
 
 export default CommentSection;
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import { io } from "socket.io-client";  // Import Socket.IO client
+// import { FaFilePdf, FaFileWord, FaFileArchive, FaFile } from "react-icons/fa";
+
+// const socket = io("http://localhost:3000"); // Connect to the backend WebSocket server
+
+// const CommentSection = ({ ticketId,userId}) => {
+//   console.log(userId);
+  
+//   const [comments, setComments] = useState([]);
+//   const [comment, setComment] = useState("");
+//   const [file, setFile] = useState(null);
+//   const [darkMode, setDarkMode] = useState(false);
+//   const MAX_COMMENT_LENGTH = 500;
+//   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+//   // const userId = localStorage.getItem("userId");
+
+//   useEffect(() => {
+//     fetchComments();
+
+//     // Listen for new comments from WebSocket
+//     socket.on("new_comment", (newComment) => {
+//       setComments((prevComments) => [...prevComments, newComment]);
+//     });
+
+//     return () => {
+//       socket.off("new_comment");
+//     };
+//   }, []);
+
+//   const fetchComments = async () => {
+//     try {
+//       const response = await axios.get(`http://localhost:3000/commentdisplay?ticket_id=${2272000006}`);
+//       setComments(response.data);
+//     } catch (error) {
+//       console.error("Error fetching comments:", error);
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!comment) {
+//       alert("Please enter a comment");
+//       return;
+//     }
+//     if (comment.length > MAX_COMMENT_LENGTH) {
+//       alert("Comment exceeds the 500-character limit");
+//       return;
+//     }
+//     if (file && file.size > MAX_FILE_SIZE) {
+//       alert("File size exceeds the 10MB limit");
+//       return;
+//     }
+//     const formData = new FormData();
+//     formData.append("comment", comment);
+//     formData.append("Ticket_id", 2272000006);
+//     formData.append("user_id", userId);
+//     if (file) formData.append("file", file);
+
+//     try {
+//       const response = await axios.post("http://localhost:3000/Comment", formData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//       });
+
+//       const newComment = response.data; // Get the newly created comment
+
+//       // Emit the new comment to the WebSocket server
+//       socket.emit("comment_added", newComment);
+
+//       setComment("");
+//       setFile(null);
+//       // No need to fetch again, since we push the new comment via WebSocket
+//     } catch (error) {
+//       console.error("Error adding comment:", error);
+//     }
+//   };
+
+//   return (
+//     <div className={`p-3 border rounded ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}>
+//       <div className="d-flex justify-content-between align-items-center mb-2">
+//         <label className="fw-bold">Comments:</label>
+//         <button className="btn btn-sm btn-outline-secondary" onClick={() => setDarkMode(!darkMode)}>
+//           {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+//         </button>
+//       </div>
+
+//       <div className="p-2 border rounded" style={{ maxHeight: "300px", overflowY: "auto" }}>
+//         {comments.length > 0 ? comments.map((c, index) => {
+//           const isMyComment = c.user_id === userId;
+//           return (
+//             <div key={index} className={`d-flex ${isMyComment ? 'justify-content-end' : 'justify-content-start'} mb-3`}>
+              
+//               {!isMyComment && (
+//                 c.profile_image ? (
+//                   <img src={c.profile_image} alt="Profile" className="rounded-circle me-2" style={{ width: "40px", height: "40px" }} />
+//                 ) : (
+//                   <div className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style={{ width: "40px", height: "40px", fontSize: "18px", fontWeight: "bold" }}>
+//                     {c.name.charAt(0).toUpperCase()}
+//                   </div>
+//                 )
+//               )}
+
+//               <div style={{ maxWidth: "75%" }}>
+//                 <div className="d-flex align-items-end flex-column">
+//                   <strong className="me-2">{c.name}</strong>
+//                   <small className="text-muted">{new Date(c.created_at).toLocaleString()}</small>
+//                 </div>
+
+//                 <div className="p-2 border rounded bg-white mt-1">
+//                   <p className="mb-1">{c.comment}</p>
+                  
+//                   {c.file_url && c.File_type?.startsWith("image/") && (
+//                     <div className="mt-2">
+//                       <img src={c.file_url} alt="Attachment" className="rounded w-100" style={{ maxWidth: "200px" }} />
+//                     </div>
+//                   )}
+
+//                   {c.file_url && !c.File_type?.startsWith("image/") && (
+//                     <div className="p-2 mt-2 border rounded bg-white d-flex align-items-center">
+//                       {c.File_type === "application/pdf" && <FaFilePdf color="#dc3545" size={18} />}
+//                       {c.File_type.includes("word") && <FaFileWord color="#007bff" size={18} />}
+//                       {c.File_type.includes("zip") && <FaFileArchive color="#ffc107" size={18} />}
+//                       {!["application/pdf", "application/zip"].includes(c.File_type) && <FaFile color="#6c757d" size={18} />}
+//                       <a href={c.file_url} target="_blank" rel="noopener noreferrer" className="ms-2">
+//                         Open file
+//                       </a>
+//                     </div>
+//                   )}
+//                 </div>
+//               </div>
+
+//               {isMyComment && (
+//                 c.profile_image ? (
+//                   <img src={c.profile_image} alt="Profile" className="rounded-circle ms-2" style={{ width: "40px", height: "40px" }} />
+//                 ) : (
+//                   <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center ms-2" style={{ width: "40px", height: "40px", fontSize: "18px", fontWeight: "bold" }}>
+//                     {c.name.charAt(0).toUpperCase()}
+//                   </div>
+//                 )
+//               )}
+//             </div>
+//           );
+//         }) : <p>No comments yet.</p>}
+//       </div>
+
+//       <div className="mt-3">
+//         <textarea className="form-control" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={MAX_COMMENT_LENGTH} placeholder="Add a comment (optional)"></textarea>
+//         <input type="file" className="form-control mt-2" onChange={(e) => setFile(e.target.files[0])} accept="image/*,.pdf,.doc,.docx,.txt,.zip" />
+//         <button className="btn btn-primary w-100 mt-2" onClick={handleSubmit}>Submit Comment</button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CommentSection;
 
 
 

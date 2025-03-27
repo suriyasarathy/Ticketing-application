@@ -13,30 +13,55 @@ function ProjectTickets() {
   const navigate = useNavigate();
   const userID = localStorage.getItem("user_id");
   const token = localStorage.getItem("authToken");
+  const [project_ID, setProject_ID] = useState(null);
+  console.log(projectID);
+  
 
+  useEffect(() => {
+    if (selectedProject?.project_id) {
+      setProject_ID(selectedProject.project_id);
+      localStorage.setItem("project_id", selectedProject.project_id);
+    }
+  }, [selectedProject]);
+  
+  console.log("Project_ID:", projectID); // Check if it's getting updated
+
+  
 
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [status ,setstatus] =useState("")
-  const [projectsetting,setProjectSetting] =useState("")
+  // const [status ,setstatus] =useState("")
 
 
   useEffect(() => {
     fetchTickets();
   }, [projectID, userID]);
-  const ProjectSetting =async ()=>{
-    try{
-      const response= await fetch(`http://localhost:3000/project/settings/${projectID}`).
-      setProjectSetting(response);
 
-    }
-    catch(err){
-      console.error("error ocured in fetching projectsetting",err);
+//   const fetchProjectSettings = async () => {
+//   try {
+//     const response = await fetch(`http://localhost:3000/project/settings/${projectID}`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+        
+//       },
+//     });
 
-    }
-  }
+//     if (!response.ok) throw new Error("Failed to fetch project settings");
+//     const data = await response.json();
+//     setProjectSettings(data); // Save project settings (contains status list)
+//   } catch (err) {
+//     console.error("Error fetching project settings:", err);
+//   }
+// };
+
+
+// useEffect(() => {
+//   fetchProjectSettings();
+// }, []);
+
   const fetchTickets = async () => {
     try {
       const response = await fetch(`http://localhost:3000/project/${projectID}/user/${userID}`, {
@@ -99,20 +124,79 @@ function ProjectTickets() {
 </div>
 
 
-      <TicketTable title="My Tickets" tickets={ticketData.assignedToUser || []} />
-      <TicketTable title="Tickets Assigned to Others" tickets={ticketData.assignedToOthers || []} />
-      <TicketTable title="Unassigned Tickets" tickets={ticketData.unassigned || []} />
+      <TicketTable title="My Tickets" tickets={ticketData.assignedToUser || []} setTicketData={setTicketData} project_ID={project_ID}/>
+      <TicketTable title="Tickets Assigned to Others" tickets={ticketData.assignedToOthers || []}project_ID={project_ID} />
+      <TicketTable title="Unassigned Tickets" tickets={ticketData.unassigned || []} project_ID={project_ID}/>
     </div>
   );
 }
 
-const TicketTable = ({ title, tickets }) => {
+const TicketTable = ({ title, tickets, setTicketData,project_ID }) => {
   const [priorityFilter, setPriorityFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [createdDateRange, setCreatedDateRange] = useState(null);
   const [dueDateRange, setDueDateRange] = useState(null);
- 
-   
+  const [projectSettings, setProjectSettings] = useState(null);
+  const { selectedProject } = useProject();
+
+  console.log("insidede",project_ID);
+  
+  useEffect(() => {
+    console.log("selectedProject:", selectedProject);
+    console.log("selectedProject.project_id:", selectedProject?.project_id);
+    console.log("project_ID inside useEffect:", project_ID);
+  }, [selectedProject, project_ID]);
+  
+  const fetchProjectSettings = async (project_ID, setProjectSettings) => {
+    try {
+      const response = await fetch(`http://localhost:3000/project/settings/${project_ID}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      if (!response.ok) throw new Error("Failed to fetch project settings");
+  
+      const data = await response.json();
+      setProjectSettings(data);
+    } catch (err) {
+      console.error("Error fetching project settings:", err);
+    }
+  };
+  
+  // Inside ProjectTickets component
+  useEffect(() => {
+    if (project_ID) {
+      fetchProjectSettings(project_ID, setProjectSettings);
+    }
+  }, [project_ID]);
+  console.log("Project_ID received in TicketTable:", project_ID);
+  
+  
+const handleStatusChange = async (ticketId, newStatus) => {
+  console.log(ticketId,newStatus);
+  
+  try {
+    const response = await fetch("http://localhost:3000/update-ticket-status", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ticketId, status: newStatus }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update status");
+
+    // Update the state
+    setTicketData((prevData) => ({
+      ...prevData,
+      assignedToUser: prevData.assignedToUser.map((ticket) =>
+        ticket.ticket_id === ticketId ? { ...ticket, status: newStatus } : ticket
+      ),
+    }));
+  } catch (err) {
+    console.error("Error updating ticket status:", err);
+  }
+};
   const filteredTickets = tickets.filter((ticket) => {
     const matchesPriority = priorityFilter ? ticket.priority === priorityFilter : true;
     const matchesStatus = statusFilter ? ticket.status === statusFilter : true;
@@ -171,6 +255,9 @@ const TicketTable = ({ title, tickets }) => {
                 <option value="closed">Closed</option>
               </select>
             </th>
+            
+
+
             <th># Dates</th>
           </tr>
         </thead>
@@ -178,19 +265,84 @@ const TicketTable = ({ title, tickets }) => {
           {filteredTickets.map((ticket) => (
             <tr key={ticket.ticket_id}>
               <td>
-                <Link to={`/ticketDetail/${ticket.ticket_id}`} className="text-decoration-none">
-                  {ticket.ticket_id}
-                </Link>
+                <Link 
+  to={{
+    pathname: `/ticketDetail/${ticket.ticket_id}`,
+    state: { projectId: project_ID }
+  }} 
+  className="text-decoration-none"
+>
+  {ticket.ticket_id}
+</Link>
+
               </td>
               <td>{ticket.Tittle}</td>
               <td>
                 <span className={`badge bg-${getPriorityClass(ticket.priority)}`}>{ticket.priority}</span>
               </td>
+             
               <td>{format(new Date(ticket.ticket_created_date), "MM-dd-yyyy")}</td>
-              <td>
-                <span className={`badge bg-${getStatusClass(ticket.status)}`}>{ticket.status}</span>
-              </td>
               <td>{format(new Date(ticket.due_date), "MM-dd-yyyy")}</td>
+               {title === "My Tickets"?
+//               <td>
+//                  <select
+//     className="form-select"
+//     value={ticket.status}
+//     onChange={(e) => handleStatusChange(ticket.ticket_id, e.target.value)}
+//   >
+//     <option value="Open">Open</option>
+//     <option value="In Progress">In Progress</option>
+//     <option value="Resolved">Resolved</option>
+//     <option value="Closed">Closed</option>
+//   </select>
+//   {/* <select
+//     className="form-select"
+//     value={tickets.status}
+//     onChange={(e) => handleStatusChange(tickets.ticket_id, e.target.value)}
+//   >
+//     {projectSettings?.custom_statuses.map((statusOption) => (
+//       <option key={statusOption} value={statusOption}>
+//         {statusOption}
+//       </option> */}
+//     {/* ))}
+//   </select> */}
+// </td>
+<td>
+  <select
+    className="form-select"
+    value={ticket.status}
+    onChange={(e) => handleStatusChange(ticket.ticket_id, e.target.value)}
+  >
+    {projectSettings &&
+      (() => {
+        let statuses = projectSettings.default_status || []; // Ensure it's an array
+
+        // Include custom statuses if enabled
+        if (projectSettings.enable_custom_statuses && Array.isArray(projectSettings.custom_statuses)) {
+          statuses = [...statuses, ...projectSettings.custom_statuses];
+        }
+
+        // Remove duplicates using Set
+        const uniqueStatuses = [...new Set(statuses)];
+
+        return uniqueStatuses.length > 0 ? (
+          uniqueStatuses.map((statusOption) => (
+            <option key={statusOption} value={statusOption}>
+              {statusOption}
+            </option>
+          ))
+        ) : (
+          <option value="">No statuses available</option>
+        );
+      })()}
+  </select>
+</td>
+
+
+: <td>
+                <span className={`badge bg-${getStatusClass(ticket.status)}`}>{ticket.status}</span>
+              </td>}
+              
               <td>{ticket.days}</td>
             </tr>
           ))}

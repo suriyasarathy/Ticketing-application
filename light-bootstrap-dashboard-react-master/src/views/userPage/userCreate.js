@@ -164,6 +164,7 @@ const handleCancel = () => {
 
       if (ticketResponse.status === 201) {
         alert("Ticket Created Successfully!");
+        navigate(-1);
       }
     } catch (error) {
       console.error("Error:", error);

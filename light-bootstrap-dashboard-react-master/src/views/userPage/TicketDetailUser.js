@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
+import CommentSection from "components/CommentSection";
 const TicketDetailUser = () => {
   const { TicketId } = useParams();
   console.log("Ticket ID from useParams:", TicketId);
@@ -17,6 +17,7 @@ const TicketDetailUser = () => {
   const token =localStorage.getItem('authToken')
   
   console.log("Ticket ID:", TicketId);
+  const user_Id = localStorage.getItem("user_id");
 
 
   // ✅ Fetch ticket details
@@ -148,14 +149,15 @@ const TicketDetailUser = () => {
       
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", marginBottom: "16px" }}>
             <div><strong style={{ color: "#555" }}>Title:</strong> {ticket.Tittle}</div>
-            <div><strong style={{ color: "#555" }}>Created At:</strong> {new Date(ticket.created_at).toLocaleString()}</div>
-            <div><strong style={{ color: "#555" }}>Updated At:</strong> {new Date(ticket.updated_at).toLocaleString()}</div>
+            <div><strong style={{ color: "#555" }}>Created At:</strong> {new Date(ticket.created_at).toLocaleDateString("en-US")}</div>
+<div><strong style={{ color: "#555" }}>Updated At:</strong> {new Date(ticket.updated_at).toLocaleDateString("en-US")}</div>
+
             <div><strong style={{ color: "#555" }}>Priority:</strong> {ticket.priority}</div>
             <div><strong style={{ color: "#555" }}>Status:</strong> {ticket.status}</div>
-            <div><strong style={{ color: "#555" }}>Assignee:</strong> {ticket.assignee_name}</div>
+            <div><strong style={{ color: "#555" }}>Assign to:</strong> {ticket.assignee_name}</div>
             <div><strong style={{ color: "#555" }}>IP Address:</strong> {ticket.Ip_address}</div>
             <div><strong style={{ color: "#555" }}>Type:</strong> {ticket.type}</div>
-            <div><strong style={{ color: "#555" }}>Reporter:</strong> {ticket.reporter_name}</div>
+            <div><strong style={{ color: "#555" }}>Report by:</strong> {ticket.reporter_name}</div>
             <div style={{ gridColumn: "span 3" }}>
               <strong style={{ color: "#555" }}>Tagging:</strong> {ticket.Tagging}
             </div>
@@ -186,8 +188,7 @@ const TicketDetailUser = () => {
   <p style={{ textAlign: "center", color: "#999" }}>No attachments available</p>
 )}
 
-
-          {/* ✅ Comments Section */}
+{/* 
           <div>
   <label style={{ fontWeight: "bold", display: "block", marginBottom: "8px" }}>Comments:</label>
   <div style={{ maxHeight: "200px", overflowY: "auto", padding: "10px", border: "1px solid #ddd", borderRadius: "4px", backgroundColor: "#f8f9fa" }}>
@@ -222,7 +223,8 @@ const TicketDetailUser = () => {
     style={{ width: "100%", padding: "10px", border: "1px solid #ccc", borderRadius: "4px" }} 
   />
   <button onClick={handleSubmit} className="btn btn-primary" style={{ marginTop: "10px" }}>Submit Comment</button>
-</div>
+</div> */}
+<CommentSection ticketId={TicketId} userId={user_Id} />
 
 
         </div>

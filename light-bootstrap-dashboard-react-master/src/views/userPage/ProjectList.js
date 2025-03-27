@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Badge } from "react-bootstrap";
+import { Card, Badge,Button } from "react-bootstrap";
 import { Calendar, User } from "lucide-react";
 import { useProject } from "../ContextData"; // Import the context
 import { format } from "date-fns";
@@ -27,6 +27,16 @@ const ProjectList = () => {
 
   return (
     <div className="container mt-4">
+   {/* ✅ Profile button aligned to top-right */}
+   <div className="d-flex justify-content-end mb-3">
+        <Button
+          variant="primary"
+          onClick={() => navigate(`/User-Profile/${userId}`)}
+          className="fw-bold px-4"
+        >
+          Profile
+        </Button>
+      </div>
       <h2 className="text-center mb-4">Projects</h2>
       {projects.length === 0 ? (
         <p className="text-muted text-center">No projects found</p>
