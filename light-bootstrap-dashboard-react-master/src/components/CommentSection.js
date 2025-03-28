@@ -484,7 +484,7 @@ const CommentSection = ({ ticketId }) => {
   };
 
   return (
-    <div className={`p-3 border rounded ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}>
+    <div className={`p-3 border rounded `}>
        {/* Comment Input */}
        <div className="mt-3">
         <textarea className="form-control" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={MAX_COMMENT_LENGTH} placeholder="Add a comment (optional)"></textarea>
@@ -493,9 +493,7 @@ const CommentSection = ({ ticketId }) => {
       </div>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <label className="fw-bold">Comments:</label>
-        <button className="btn btn-sm btn-outline-secondary" onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
+        
       </div>
 
       <div className="p-2 border rounded">

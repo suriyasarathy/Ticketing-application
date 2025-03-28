@@ -68,12 +68,12 @@ const ProjectList = () => {
                       <strong>Manager:</strong> {project.manager_name || "Not Assigned"}
                     </li>
                     <li>
-                      <strong>Phase:</strong> {project.phase_id || "N/A"}
+                      <strong>Phase:</strong> {project.phase_name	|| "N/A"}
                     </li>
                     <li>
-                    {project?.due_date 
+                    {/* {project?.due_date 
                         ? format(new Date(project.due_date), "MM-dd-yyyy HH:mm a") 
-                        : " No Due Date"}
+                        : " No Due Date"} */}
                     <li>
                       </li>
                       <strong>Total Tickets:</strong> {project.total_tickets || 0}

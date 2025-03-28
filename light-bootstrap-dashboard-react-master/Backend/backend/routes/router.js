@@ -27,7 +27,8 @@
     const adminProjectTicketList =require("../controllers/adminProjectTicketListcontrolle1r")
     const projectModifyController = require("../controllers/projectAltercontroller/projectListinMOdified");
     const CreateTicket =require("../controllers/CreateTicketController")
-
+    const ReassignTicket =require("../controllers/UserScreen/Reassigncontroller")
+    const Reproted_ticket =require("../controllers/UserScreen/TicketIdReported")
     router.get("/ProjectTicket", AdminProjectListTicket.AdmminProjectListTicket);
 
     router.get("/project/:project_id", projectModifyController.getProjectDetails);
@@ -46,11 +47,14 @@
 
     // Update team member role
     router.put("/project/team/update-role", projectModifyController.updateTeamMemberRole);
-
+    // get report ticket id 
+    router.get("/ReportedTicket/:ticket_id",Reproted_ticket.getuserTicket)
     // Reassign a ticket
     router.put("/project/ticket/reassign",projectModifyController.reassignTicket);
     router.get("/project/ticket/:ticket_id/details", projectModifyController.getTicketDetails);
-
+    router.put("/assginmy",ReassignTicket.updateUnassginTicket)
+    router.get('/Ticket/user/:projectId', ReassignTicket.getUsers);
+    router.post("/Reassign/:ticketId",ReassignTicket.assignTicket)
     // Update project settings
     router.put("/project/settings/:project_id", projectModifyController.updateProjectSettings);
 

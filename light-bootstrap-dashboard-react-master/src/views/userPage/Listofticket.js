@@ -15,7 +15,13 @@ function ProjectTickets() {
   const token = localStorage.getItem("authToken");
   const [project_ID, setProject_ID] = useState(null);
   console.log(projectID);
-  
+
+const formattedDate = (date) => {
+  if (!date) return "N/A"; // Handle missing date
+  const parsedDate = new Date(date);
+  return isNaN(parsedDate.getTime()) ? "Invalid Date" : format(parsedDate, "yyyy-MM-dd");
+};
+
 
   useEffect(() => {
     if (selectedProject?.project_id) {
@@ -125,22 +131,43 @@ function ProjectTickets() {
 
 
       <TicketTable title="My Tickets" tickets={ticketData.assignedToUser || []} setTicketData={setTicketData} project_ID={project_ID}/>
-      <TicketTable title="Tickets Assigned to Others" tickets={ticketData.assignedToOthers || []}project_ID={project_ID} />
-      <TicketTable title="Unassigned Tickets" tickets={ticketData.unassigned || []} project_ID={project_ID}/>
+      <TicketTable title="Tickets Assigned to Others" tickets={ticketData.assignedToOthers || []}project_ID={project_ID}   setTicketData={setTicketData} // ✅ Ensure this is passed
+ />
+      <TicketTable title="Unassigned Tickets" tickets={ticketData.unassigned || []}  setTicketData={setTicketData} // ✅ Ensure this is passed
+ project_ID={project_ID} currentUser  ={userID}/>
     </div>
   );
 }
 
-const TicketTable = ({ title, tickets, setTicketData,project_ID }) => {
+const TicketTable = ({ title, tickets, setTicketData,project_ID,currentUser }) => {
   const [priorityFilter, setPriorityFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(""); 
   const [createdDateRange, setCreatedDateRange] = useState(null);
   const [dueDateRange, setDueDateRange] = useState(null);
   const [projectSettings, setProjectSettings] = useState(null);
   const { selectedProject } = useProject();
+  const [allowreassginticket,setallowreassginticket] =useState()
+  const [projectUsers, setProjectUsers] = useState([]);
+
+console.log("allow ",allowreassginticket);
 
   console.log("insidede",project_ID);
-  
+  const fetchProjectUsers = async (project_ID) => {
+    try {
+        const response = await fetch(`http://localhost:3000/Ticket/user/${project_ID}`);
+        if (!response.ok) throw new Error("Failed to fetch project users");
+
+        const users = await response.json();
+        setProjectUsers(users);
+    } catch (err) {
+        console.error("Error fetching project users:", err);
+    }
+};
+
+// Fetch users when project_ID changes
+useEffect(() => {
+    if (project_ID) fetchProjectUsers(project_ID);
+}, [project_ID]);
   useEffect(() => {
     console.log("selectedProject:", selectedProject);
     console.log("selectedProject.project_id:", selectedProject?.project_id);
@@ -157,6 +184,8 @@ const TicketTable = ({ title, tickets, setTicketData,project_ID }) => {
       if (!response.ok) throw new Error("Failed to fetch project settings");
   
       const data = await response.json();
+      const allowReasgin =data.allow_ticket_reassign
+      setallowreassginticket(allowReasgin)
       setProjectSettings(data);
     } catch (err) {
       console.error("Error fetching project settings:", err);
@@ -197,25 +226,125 @@ const handleStatusChange = async (ticketId, newStatus) => {
     console.error("Error updating ticket status:", err);
   }
 };
-  const filteredTickets = tickets.filter((ticket) => {
+  // const filteredTickets = tickets.filter((ticket) => {
+  //   const matchesPriority = priorityFilter ? ticket.priority === priorityFilter : true;
+  //   const matchesStatus = statusFilter ? ticket.status === statusFilter : true;
+
+  //   const ticketCreatedDate = new Date(ticket.ticket_created_date);
+  //   const ticketDueDate = new Date(ticket.due_date);
+
+  //   const matchesCreatedDate = createdDateRange
+  //     ? ticketCreatedDate >= new Date(createdDateRange.startDate) &&
+  //       ticketCreatedDate <= new Date(createdDateRange.endDate)
+  //     : true;
+
+  //   const matchesDueDate = dueDateRange
+  //     ? ticketDueDate >= new Date(dueDateRange.startDate) &&
+  //       ticketDueDate <= new Date(dueDateRange.endDate)
+  //     : true;
+
+  //   return matchesPriority && matchesStatus && matchesCreatedDate && matchesDueDate;
+  
+  // });
+  const filteredTickets = (tickets || []).filter((ticket) => {
+    if (!ticket) return false; // Ensure ticket is not undefined/null
+  
     const matchesPriority = priorityFilter ? ticket.priority === priorityFilter : true;
     const matchesStatus = statusFilter ? ticket.status === statusFilter : true;
-
+  
     const ticketCreatedDate = new Date(ticket.ticket_created_date);
     const ticketDueDate = new Date(ticket.due_date);
-
+  
     const matchesCreatedDate = createdDateRange
       ? ticketCreatedDate >= new Date(createdDateRange.startDate) &&
         ticketCreatedDate <= new Date(createdDateRange.endDate)
       : true;
-
+  
     const matchesDueDate = dueDateRange
       ? ticketDueDate >= new Date(dueDateRange.startDate) &&
         ticketDueDate <= new Date(dueDateRange.endDate)
       : true;
-
+  
     return matchesPriority && matchesStatus && matchesCreatedDate && matchesDueDate;
   });
+  
+  const assignTicketToMe = async (ticketId, userId) => {
+    console.log(ticketId,userId)
+    try {
+        const response = await fetch(`http://localhost:3000/assginmy`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ticketId, userId })
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to assign ticket");
+        }
+
+        const updatedTicket = await response.json();
+
+        // Update frontend state (assuming state structure has 'unassigned' and 'assignedToUser' lists)
+        setTicketData((prevData) => {
+            const updatedUnassigned = prevData.unassigned.filter(ticket => ticket.ticket_id !== ticketId);
+            return {
+                ...prevData,
+                assignedToUser: [...prevData.assignedToUser, updatedTicket],
+                unassigned: updatedUnassigned,
+            };
+        });
+
+        console.log("Ticket successfully assigned to you:", updatedTicket);
+    } catch (error) {
+        console.error("Error assigning ticket:", error);
+    }
+};
+
+const handleReassignTicket = async (ticketId, userId) => {
+  console.log("Reassigning Ticket:", ticketId, "to User:", userId);
+
+  try {
+    const response = await fetch(`http://localhost:3000/Reassign/${ticketId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, projectId: project_ID }),
+    });
+
+    if (!response.ok) throw new Error("Failed to reassign ticket");
+
+    // Get updated ticket details from response
+    const updatedTicket = await response.json();
+
+    setTicketData((prevData) => {
+      if (!prevData) return prevData;
+
+      // Find the ticket and update its assigned user
+      const updatedAssigned = prevData.assignedToUser.map((ticket) =>
+        ticket.ticket_id === ticketId ? { ...ticket, assigned_to: userId } : ticket
+      );
+
+      // If the ticket was in 'unassigned', move it to assignedToUser
+      const reassignedTicket = prevData.unassigned.find((ticket) => ticket.ticket_id === ticketId);
+      const updatedUnassigned = prevData.unassigned.filter((ticket) => ticket.ticket_id !== ticketId);
+
+      return {
+        ...prevData,
+        assignedToUser: reassignedTicket
+          ? [...updatedAssigned, { ...reassignedTicket, assigned_to: userId }]
+          : updatedAssigned,
+        unassigned: updatedUnassigned,
+      };
+    });
+
+    console.log("Ticket reassigned successfully:", updatedTicket);
+  } catch (err) {
+    console.error("Error reassigning ticket:", err);
+  }
+};
+
+
+
 
   return (
     <>  <div className="row">
@@ -223,44 +352,55 @@ const handleStatusChange = async (ticketId, newStatus) => {
     <div className="card p-3 shadow-lg rounded-3  bg-light ">
       <h4>{title}</h4>
       <table className="table table-striped">
-        <thead>
-          <tr>
-            <th className="text-center">Ticket #</th>
-            <th className="text-center">Title</th>
-            <th className="d-flex align-items-center justify-content-center">
-              Priority
-              <select className="form-select ms-2" onChange={(e) => setPriorityFilter(e.target.value)}>
-                <option value="">All</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </th>
-            <th>Ticket Created  <CustomDateRange onFilterChange={setCreatedDateRange} />
+      <thead>
+  <tr>
+    <th className="text-center">TICKET #</th>
+    <th className="text-center">TITLE</th>
+    <th className="text-center">
+      <div className="d-flex flex-column align-items-center">
+        PRIORITY
+        <select className="form-select mt-1" style={{ width: "120px" }} onChange={(e) => setPriorityFilter(e.target.value)}>
+          <option value="">All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </th>
+    <th className="text-center">
+      <div className="d-flex flex-column align-items-center">
+        TICKET CREATED
+        <CustomDateRange className="mt-1" onFilterChange={setCreatedDateRange} style={{ width: "200px" }} />
+      </div>
+    </th>
+    <th className="text-center">
+      <div className="d-flex flex-column align-items-center">
+        DUE DATE
+        <CustomDateRange className="mt-1" onFilterChange={setDueDateRange} style={{ width: "200px" }} />
+      </div>
+    </th>
+    <th className="text-center">
+      <div className="d-flex flex-column align-items-center">
+        STATUS
+        <select className="form-select mt-1" style={{ width: "120px" }} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All</option>
+          <option value="In open">Open</option>
+          <option value="In progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+    </th>
+    <th className="text-center"># DATES</th>
+    {title==="My Tickets" ?<th className="tect-cend">Reassgin</th>:""}
+   { title==="Unassigned Tickets" ?<th className="tect-center">assgin </th>:""}
 
-            </th>
+  </tr>
+</thead>
+
+
+
             
-            <th>
-  Due Date
-  <CustomDateRange onFilterChange={setDueDateRange} />
-
-</th>
-<th className="d-flex">
-              Status
-              <select className="form-select" onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="">All</option>
-                <option value="In open">Open</option>
-                <option value="In progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-            </th>
-            
-
-
-            <th># Dates</th>
-          </tr>
-        </thead>
         <tbody>
           {filteredTickets.map((ticket) => (
             <tr key={ticket.ticket_id}>
@@ -344,6 +484,31 @@ const handleStatusChange = async (ticketId, newStatus) => {
               </td>}
               
               <td>{ticket.days}</td>
+              {title === "Unassigned Tickets"?<td>
+  <button
+    className="btn btn-primary"
+    onClick={() => assignTicketToMe(ticket.ticket_id, currentUser)}
+  
+  >
+    Assign to Me
+  </button>
+</td>:""}
+{title === "My Tickets"?<td>
+  {allowreassginticket && (
+    <select
+      className="form-select"
+      onChange={(e) => handleReassignTicket(ticket.ticket_id, e.target.value)}
+    >
+      <option value="">all</option>
+      {projectUsers.map((user) => (
+        <option key={user.user_id} value={user.user_id}>
+          {user.name}
+        </option>
+      ))}
+    </select>
+  )}
+</td>:""}
+
             </tr>
           ))}
         </tbody>

@@ -152,7 +152,7 @@ removeTeamFromProject: async (req, res) => {
             res.status(500).json({ error: error.message });
         }
     },
-
+    
     // Update Project Settings
     updateProjectSettings: async (req, res) => {
         try {

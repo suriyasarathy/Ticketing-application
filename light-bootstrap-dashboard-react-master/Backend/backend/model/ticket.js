@@ -2,6 +2,8 @@ const db = require('../config/db');
 
 const Ticket = {
     fetchTickets: async (ticketId) => {
+        console.log("Fetching Ticket ID:", ticketId);
+        
         const baseQuery = `
             SELECT 
                 t.Ticket_id,
@@ -16,7 +18,7 @@ const Ticket = {
                 t.Ip_address,
                 t.type,
                 r.name AS reporter_name,
-                a.name AS assignee_name,
+                COALESCE(a.name, '') AS assignee_name,  -- Handle NULL case
                 p.name AS project_name,
                 at.attach_id,
                 at.file_name,
@@ -26,19 +28,23 @@ const Ticket = {
                 tickets t
             JOIN 
                 user r ON t.reported_id = r.user_id
-            JOIN 
-                user a ON t.assigin_id = a.user_id
+            LEFT JOIN 
+                user a ON t.assigin_id = a.user_id  -- Changed to LEFT JOIN
             JOIN 
                 projects p ON t.project_id = p.project_id
             LEFT JOIN 
                 attachments at ON t.Ticket_id = at.ticket_id
         `;
 
-        const query = ticketId
-            ? `${baseQuery} WHERE t.Ticket_id = ?`
-            : baseQuery;
+        const query = ticketId ? `${baseQuery} WHERE t.Ticket_id = ?` : baseQuery;
 
         const [results] = await db.query(query, ticketId ? [ticketId] : []);
+        
+        console.log("Query Results:", results);
+        
+        if (results.length === 0) {
+            return [];  // Ensure we return an empty array if no tickets are found
+        }
 
         const ticketsMap = new Map();
 
@@ -59,7 +65,7 @@ const Ticket = {
                     Ip_address: row.Ip_address,
                     type: row.type,
                     reporter_name: row.reporter_name,
-                    assignee_name: row.assignee_name,
+                    assignee_name: row.assignee_name,  // Now handles NULL properly
                     project_name: row.project_name,
                     attachments: []
                 });

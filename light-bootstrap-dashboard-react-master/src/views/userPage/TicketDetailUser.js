@@ -154,10 +154,10 @@ const TicketDetailUser = () => {
 
             <div><strong style={{ color: "#555" }}>Priority:</strong> {ticket.priority}</div>
             <div><strong style={{ color: "#555" }}>Status:</strong> {ticket.status}</div>
-            <div><strong style={{ color: "#555" }}>Assign to:</strong> {ticket.assignee_name}</div>
+            <div><strong style={{ color: "#555" }}>Assigned to:</strong> {ticket.assignee_name}</div>
             <div><strong style={{ color: "#555" }}>IP Address:</strong> {ticket.Ip_address}</div>
             <div><strong style={{ color: "#555" }}>Type:</strong> {ticket.type}</div>
-            <div><strong style={{ color: "#555" }}>Report by:</strong> {ticket.reporter_name}</div>
+            <div><strong style={{ color: "#555" }}>Reported by:</strong> {ticket.reporter_name}</div>
             <div style={{ gridColumn: "span 3" }}>
               <strong style={{ color: "#555" }}>Tagging:</strong> {ticket.Tagging}
             </div>
